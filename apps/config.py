@@ -8,6 +8,14 @@ import os
 class Config(object):
 
     basedir = os.path.abspath(os.path.dirname(__file__))
+    # Email settings
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')  # Default: Gmail SMTP
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))              # Default: TLS
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
+    MAIL_USE_SSL = os.getenv('MAIL_USE_SSL', 'false').lower() == 'true'
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')                # Your email address
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')                # Your email password
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
 
     # Set up the App SECRET_KEY
     # SECRET_KEY = config('SECRET_KEY'  , default='S#perS3crEt_007')

@@ -1,0 +1,127 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Reminders {% endblock %}
+
+<!-- Specific Page CSS -->
+{% block stylesheets %}
+<style>
+    .card-tasks .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .reminder-description {
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+    .table-responsive {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="row">
+        <!-- Reminder Form Section -->
+        <div class="col-lg-6 col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Set Up Reminders</h4>
+                    <p class="card-category">Manage and configure your reminders</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('home_blueprint.reminders') }}">
+                        <div class="form-group">
+                            <label for="reminderEmail">Email</label>
+                            <input type="email" class="form-control" id="reminderEmail" name="email" placeholder="Enter recipient email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reminderMessage">Message</label>
+                            <textarea class="form-control" id="reminderMessage" name="message" rows="3" placeholder="Enter your reminder message" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="reminderDate">Date</label>
+                            <input type="date" class="form-control" id="reminderDate" name="reminder_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reminderTime">Time</label>
+                            <input type="time" class="form-control" id="reminderTime" name="reminder_time" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Reminder</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reminder List Section -->
+        <div class="col-lg-6 col-md-12">
+            <div class="card card-tasks">
+                <div class="card-header">
+                    <h6 class="title d-inline">Reminders</h6>
+                    <p class="card-category d-inline">Upcoming</p>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown" aria-expanded="false">
+                            <i class="tim-icons icon-settings-gear-63"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="{{ url_for('home_blueprint.reminders') }}">Refresh List</a>
+                            <a class="dropdown-item" href="#">Mark All as Done</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-full-width table-responsive">
+                        <table class="table">
+                            <tbody>
+                                {% for reminder in reminders %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" {% if reminder.sent %}checked{% endif %}>
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="title">{{ reminder.message }}</p>
+                                        <p class="reminder-description">
+                                            {{ reminder.email }}<br>
+                                            {{ reminder.reminder_time.strftime('%Y-%m-%d %H:%M') }}
+                                        </p>
+                                    </td>
+                                    <td class="td-actions text-right">
+                                        <form method="POST" action="{{ url_for('home_blueprint.delete_reminder', reminder_id=reminder.id) }}">
+                                            <button type="submit" rel="tooltip" title="Delete Reminder" class="btn btn-link">
+                                                <i class="tim-icons icon-simple-remove"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No reminders found. Add one using the form!</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS -->
+{% block javascripts %}
+<script>
+    $(document).ready(function () {
+        console.log("Reminders page loaded.");
+    });
+</script>
+{% endblock javascripts %}

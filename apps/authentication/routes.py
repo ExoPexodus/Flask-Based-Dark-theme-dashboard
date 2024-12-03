@@ -18,6 +18,7 @@ from apps.authentication.forms import LoginForm, CreateAccountForm
 from apps.authentication.models import Users
 
 from apps.authentication.util import verify_pass
+from apps.decorators import role_required
 
 
 @blueprint.route('/')
@@ -39,48 +40,45 @@ def login_github():
 def login():
     login_form = LoginForm(request.form)
     if 'login' in request.form:
-
-        # read form data
         username = request.form['username']
         password = request.form['password']
 
-        # Locate user
         user = Users.query.filter_by(username=username).first()
-
-        # Check the password
         if user and verify_pass(password, user.password):
-
             login_user(user)
-            return redirect(url_for('authentication_blueprint.route_default'))
 
-        # Something (user or pass) is not ok
+            # Redirect based on user role
+            if user.role == 'admin':
+                return redirect(url_for('home_blueprint.index'))
+            elif user.role == 'viewer':
+                return redirect(url_for('home_blueprint.viewer_dashboard'))
+
         return render_template('accounts/login.html',
                                msg='Wrong user or password',
                                form=login_form)
 
     if not current_user.is_authenticated:
-        return render_template('accounts/login.html',
-                               form=login_form)
+        return render_template('accounts/login.html', form=login_form)
     return redirect(url_for('home_blueprint.index'))
 
 
+
 @blueprint.route('/register', methods=['GET', 'POST'])
+@role_required('admin')  # Only admin users can register new accounts
 def register():
     create_account_form = CreateAccountForm(request.form)
     if 'register' in request.form:
-
+        # Registration logic remains the same
         username = request.form['username']
         email = request.form['email']
-
-        # Check usename exists
+        
+        # Check if username or email already exists...
         user = Users.query.filter_by(username=username).first()
         if user:
             return render_template('accounts/register.html',
                                    msg='Username already registered',
                                    success=False,
                                    form=create_account_form)
-
-        # Check email exists
         user = Users.query.filter_by(email=email).first()
         if user:
             return render_template('accounts/register.html',
@@ -88,21 +86,18 @@ def register():
                                    success=False,
                                    form=create_account_form)
 
-        # else we can create the user
+        # Create the user
         user = Users(**request.form)
         db.session.add(user)
         db.session.commit()
 
-        # Delete user from session
-        logout_user()
-        
         return render_template('accounts/register.html',
                                msg='Account created successfully.',
                                success=True,
                                form=create_account_form)
-
     else:
         return render_template('accounts/register.html', form=create_account_form)
+
 
 
 @blueprint.route('/logout')
